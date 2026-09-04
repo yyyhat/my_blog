@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 	<channel>
 		<title>Posts on hatter&#39;s blog</title>
-		<link>http://localhost:1313/my_blog/posts/</link>
+		<link>http://localhost:58284/my_blog/posts/</link>
 		<description>Recent content in Posts on hatter&#39;s blog</description>
 		<generator>Hugo</generator>
 		<language>en-us</language>
@@ -10,14 +10,21 @@
 		
 		
 		
-			<lastBuildDate>Thu, 03 Sep 2026 12:08:32 +0800</lastBuildDate>
+			<lastBuildDate>Thu, 03 Sep 2026 15:04:32 +0800</lastBuildDate>
 		
-			<atom:link href="http://localhost:1313/my_blog/posts/index.xml" rel="self" type="application/rss+xml" />
+			<atom:link href="http://localhost:58284/my_blog/posts/index.xml" rel="self" type="application/rss+xml" />
+			<item>
+				<title>使用 URDF 创建机器人</title>
+				<link>http://localhost:58284/my_blog/posts/urdf_learn/</link>
+				<pubDate>Thu, 03 Sep 2026 15:04:32 +0800</pubDate>
+				<guid>http://localhost:58284/my_blog/posts/urdf_learn/</guid>
+				<description>&lt;p&gt;本文介绍如何使用 URDF 创建一个简单机器人，包括 XML 编写、模型显示和 RViz 配置。&lt;/p&gt;</description>
+			</item>
 			<item>
 				<title>Hello my blog</title>
-				<link>http://localhost:1313/my_blog/posts/hello/</link>
+				<link>http://localhost:58284/my_blog/posts/hello/</link>
 				<pubDate>Thu, 03 Sep 2026 12:08:32 +0800</pubDate>
-				<guid>http://localhost:1313/my_blog/posts/hello/</guid>
+				<guid>http://localhost:58284/my_blog/posts/hello/</guid>
 				<description>&lt;h2 id=&#34;this-is-hatters-blog&#34;&gt;this is hatter&amp;rsquo;s blog&lt;/h2&gt;&#xA;&lt;p&gt;I will record something here,maybe not.&lt;/p&gt;</description>
 			</item>
 	</channel>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/my_blog/livereload.js?mindelay=10&amp;v=2&amp;port=58284&amp;path=my_blog/livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>使用 URDF 创建机器人 | hatter&#39;s blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="本文介绍如何使用 URDF 创建一个简单机器人，包括 XML 编写、模型显示和 RViz 配置。">
+    <meta name="generator" content="Hugo 0.165.0">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    <link rel="stylesheet" href="/my_blog/ananke/css/main.css">
+    <script>
+  (function () {
+    "use strict";
+
+    
+    
+    function revealButtons() {
+      var buttons = document.querySelectorAll(".code-block .code-copy[hidden]");
+      for (var i = 0; i < buttons.length; i++) {
+        buttons[i].hidden = false;
+      }
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", revealButtons);
+    } else {
+      revealButtons();
+    }
+
+    function flash(button) {
+      var label = button.querySelector(".code-copy-label");
+      var previous = label ? label.textContent : null;
+      button.classList.add("is-copied");
+      if (label) label.textContent = "Copied";
+      window.setTimeout(function () {
+        button.classList.remove("is-copied");
+        if (label && previous !== null) label.textContent = previous;
+      }, 2000);
+    }
+
+    function legacyCopy(text) {
+      var area = document.createElement("textarea");
+      area.value = text;
+      area.setAttribute("readonly", "");
+      area.style.position = "absolute";
+      area.style.left = "-9999px";
+      document.body.appendChild(area);
+      area.select();
+      var ok = false;
+      try {
+        ok = document.execCommand("copy");
+      } catch (e) {
+        ok = false;
+      }
+      document.body.removeChild(area);
+      return ok;
+    }
+
+    function copyFrom(button) {
+      var container = button.closest(".code-block");
+      if (!container) return;
+      var pre = container.querySelector("pre");
+      if (!pre) return;
+      var source = pre.querySelector("code") || pre;
+      var text = source.innerText;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          function () { flash(button); },
+          function () { if (legacyCopy(text)) flash(button); }
+        );
+      } else if (legacyCopy(text)) {
+        flash(button);
+      }
+    }
+
+    document.addEventListener("click", function (event) {
+      var button = event.target.closest(".code-copy");
+      if (button) copyFrom(button);
+    });
+  })();
+</script>
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:58284/my_blog/posts/urdf_learn/">
+    
+
+    
+    
+    <meta property="og:url" content="http://localhost:58284/my_blog/posts/urdf_learn/">
+	<meta property="og:site_name" content="hatter&#39;s blog">
+	<meta property="og:title" content="使用 URDF 创建机器人">
+	<meta property="og:description" content="本文介绍如何使用 URDF 创建一个简单机器人，包括 XML 编写、模型显示和 RViz 配置。">
+	<meta property="og:locale" content="en_us">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="posts">
+		<meta property="article:published_time" content="2026-09-03T15:04:32+08:00">
+		<meta property="article:modified_time" content="2026-09-03T15:04:32+08:00">
+
+	<meta itemprop="name" content="使用 URDF 创建机器人">
+	<meta itemprop="description" content="本文介绍如何使用 URDF 创建一个简单机器人，包括 XML 编写、模型显示和 RViz 配置。">
+	<meta itemprop="datePublished" content="2026-09-03T15:04:32+08:00">
+	<meta itemprop="dateModified" content="2026-09-03T15:04:32+08:00">
+	<meta itemprop="wordCount" content="519">
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="使用 URDF 创建机器人">
+	<meta name="twitter:description" content="本文介绍如何使用 URDF 创建一个简单机器人，包括 XML 编写、模型显示和 RViz 配置。">
+
+	
+  </head><body class="ma0 avenir bg-washed-blue development is-page is-page page-URDF_learn">
+   
+  
+
+
+  <header>
+    <div class="bg-dark-blue">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/my_blog/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        hatter&#39;s blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+<main class="pb7" role="main">
+  
+
+  <article class="page-URDF_learn flex-l mw7 center ph3 flex-wrap justify-between">
+    <header class="mt4 w-100"><aside class="instapaper_ignoref b helvetica tracked ttu">
+    <a class="link dim" href="http://localhost:58284/my_blog/posts/">Posts</a>
+  </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">使用 URDF 创建机器人</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2026-09-03T15:04:32+08:00">September 3, 2026</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-100-l"><p>本文介绍如何使用 URDF 创建一个简单机器人，包括 XML 编写、模型显示和 RViz 配置。</p>
+<p><a href="https://www.bilibili.com/video/BV1Vq2LYoECn">内容来自鱼香的教程，点击可查看视频</a></p>
+<h3 id="1在功能包目录下添加-urdf-目录并在该文件夹下创建一个-urdf-文件">1、在功能包目录下添加 urdf 目录，并在该文件夹下创建一个 urdf 文件。</h3>
+<p><img src="../../images/posts/URDF_learn/create_urdf_file.png" alt=""></p>
+<p>为了开发方便可以在Vscode 里安装 urdf 插件。</p>
+<h3 id="2编写-xml-描述一个机器人参考一下代码">2、编写 XML 描述一个机器人，参考一下代码</h3>
+<div class="code-block">
+    <button class="code-copy" type="button" hidden aria-label="Copy code to clipboard">
+      <span class="code-copy-label" aria-hidden="true">Copy</span>
+    </button>
+    <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-XML" data-lang="XML"><span style="display:flex;"><span><span style="color:#75715e">&lt;?xml version=&#34;1.0&#34;?&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;robot</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;my_robot&#34;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">&lt;!-- robot&#39;s body --&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;link</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;base_link&#34;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">&lt;!-- firmware appearance description --&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;visual&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">&lt;!-- 沿着自己几何中心的偏移和旋转 --&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;origin</span> <span style="color:#a6e22e">xyz=</span><span style="color:#e6db74">&#34;0.0 0.0 0.0&#34;</span> <span style="color:#a6e22e">rpy=</span><span style="color:#e6db74">&#34;0.0 0.0 0.0&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">&lt;!-- 几何形状 --&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;geometry&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">&lt;!-- 形状是圆柱体 --&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&lt;cylinder</span> <span style="color:#a6e22e">radius=</span><span style="color:#e6db74">&#34;0.10&#34;</span> <span style="color:#a6e22e">length=</span><span style="color:#e6db74">&#34;0.2&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;/geometry&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">&lt;!-- 材质颜色 --&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;material</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;white&#34;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&lt;color</span> <span style="color:#a6e22e">rgba=</span><span style="color:#e6db74">&#34;1.0 1.0 1.0 0.5&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;/material&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;/visual&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/link&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">&lt;!-- 机器人的IMU部件 --&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;link</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;imu_link&#34;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">&lt;!-- firmware appearance description --&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;visual&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">&lt;!-- 沿着自己几何中心的偏移和旋转 --&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;origin</span> <span style="color:#a6e22e">xyz=</span><span style="color:#e6db74">&#34;0.0 0.0 0.0&#34;</span> <span style="color:#a6e22e">rpy=</span><span style="color:#e6db74">&#34;0.0 0.0 0.0&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">&lt;!-- 几何形状 --&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;geometry&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&lt;box</span> <span style="color:#a6e22e">size=</span><span style="color:#e6db74">&#34;0.02 0.02 0.02&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;/geometry&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">&lt;!-- 材质颜色 --&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;material</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;black&#34;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&lt;color</span> <span style="color:#a6e22e">rgba=</span><span style="color:#e6db74">&#34;0.0 0.0 0.0 0.5&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;/material&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;/visual&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/link&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">&lt;!-- 机器人的关节，用于组合机器人的部件 --&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;joint</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;imu_name&#34;</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;fixed&#34;</span><span style="color:#f92672">&gt;</span>   
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">&lt;!-- 部件固定的位置 部件的中心相对于机器人的中心--&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;origin</span> <span style="color:#a6e22e">xyz=</span><span style="color:#e6db74">&#34;0.0 0.0 0.03&#34;</span> <span style="color:#a6e22e">rpy=</span><span style="color:#e6db74">&#34;0.0 0.0 0.0&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;parent</span> <span style="color:#a6e22e">link=</span><span style="color:#e6db74">&#34;base_link&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;child</span> <span style="color:#a6e22e">link=</span><span style="color:#e6db74">&#34;imu_link&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/joint&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/robot&gt;</span></span></span></code></pre></div>
+  </div><h3 id="3通过-urdf_to_graphiz-把-urdf-中的机器人连接关系画成一张图">3、通过 urdf_to_graphiz 把 URDF 中的机器人连接关系画成一张图</h3>
+<p>在终端输入命令：</p>
+<div class="code-block">
+    <button class="code-copy" type="button" hidden aria-label="Copy code to clipboard">
+      <span class="code-copy-label" aria-hidden="true">Copy</span>
+    </button>
+    <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>urdf_to_graphiz urdf_name.urdf</span></span></code></pre></div>
+  </div><h3 id="4通过-rviz-查看-urdf-模型">4、通过 Rviz 查看 urdf 模型</h3>
+<p>选择 file</p>
+<p><img src="../../images/posts/URDF_learn/rviz1.png" alt=""></p>
+<p>点 Description File 选择创建的 urdf 文件</p>
+<p><img src="../../images/posts/URDF_learn/rviz2.png" alt=""></p>
+<p>可以看到有两个错误，原因是没有节点发布 map 到 base_link 与 map 到 imu_link 的TF</p>
+<p><img src="../../images/posts/URDF_learn/rviz3.png" alt=""></p>
+<p>将基准坐标系改为 base_link 可以消除 base_link 的错误，但 imu_link 的错误还在，这是为什么？
+原因是 Rviz 不用读取 urdf 里的 TF 关系，只会接收节点发送的 TF 关系。</p>
+<p><img src="../../images/posts/URDF_learn/rviz4.png" alt=""></p>
+<p>解决这个报错就需要下载两个工具去发布机器人与部件的 TF 关系，所以我用到了两个工具 robot-state-publisher 与 joint-state-publisher，他们的配合关系如下：</p>
+<p><img src="../../images/posts/URDF_learn/state_pulisher.png" alt=""></p>
+<p>打开终端安装这两个工具</p>
+<div class="code-block">
+    <button class="code-copy" type="button" hidden aria-label="Copy code to clipboard">
+      <span class="code-copy-label" aria-hidden="true">Copy</span>
+    </button>
+    <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>sudo apt install ros-$ROS_DISTRO-join-state-publisher
+</span></span><span style="display:flex;"><span>sudo apt install ros-$ROS_DISTRO-robot-state-publisher</span></span></code></pre></div>
+  </div><p>由于用终端启动这两个节点太麻烦了，所有最好还是写一个 launch 示例如下：</p>
+<div class="code-block">
+    <button class="code-copy" type="button" hidden aria-label="Copy code to clipboard">
+      <span class="code-copy-label" aria-hidden="true">Copy</span>
+    </button>
+    <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> launch
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> launch_ros
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> launch_ros.parameter_descriptions <span style="color:#f92672">import</span> ParameterValue
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> ament_index_python.packages <span style="color:#f92672">import</span> get_package_share_directory    <span style="color:#75715e"># 找到 share/包名 这一层</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">generate_launch_description</span>():
+</span></span><span style="display:flex;"><span>    default_urdf_path <span style="color:#f92672">=</span> get_package_share_directory(<span style="color:#e6db74">&#39;mybot_describtion&#39;</span>) <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;/urdf&#39;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;/my_robot.urdf&#39;</span>
+</span></span><span style="display:flex;"><span>    default_rviz_path <span style="color:#f92672">=</span> get_package_share_directory(<span style="color:#e6db74">&#39;mybot_describtion&#39;</span>) <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;/rviz&#39;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;/urdf_config.rviz&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    action_declare_urdf_path <span style="color:#f92672">=</span> launch<span style="color:#f92672">.</span>actions<span style="color:#f92672">.</span>DeclareLaunchArgument(
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;urdf_model&#39;</span>,
+</span></span><span style="display:flex;"><span>        default_value<span style="color:#f92672">=</span>default_urdf_path
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>    action_declare_rviz_path <span style="color:#f92672">=</span> launch<span style="color:#f92672">.</span>actions<span style="color:#f92672">.</span>DeclareLaunchArgument(
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;rviz_config&#39;</span>,
+</span></span><span style="display:flex;"><span>        default_value<span style="color:#f92672">=</span>default_rviz_path
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    urdf_path <span style="color:#f92672">=</span> launch<span style="color:#f92672">.</span>substitutions<span style="color:#f92672">.</span>LaunchConfiguration(<span style="color:#e6db74">&#39;urdf_model&#39;</span>)
+</span></span><span style="display:flex;"><span>    rviz_path <span style="color:#f92672">=</span> launch<span style="color:#f92672">.</span>substitutions<span style="color:#f92672">.</span>LaunchConfiguration(<span style="color:#e6db74">&#39;rviz_config&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># get the urdf content from its path</span>
+</span></span><span style="display:flex;"><span>    content_result <span style="color:#f92672">=</span> launch<span style="color:#f92672">.</span>substitutions<span style="color:#f92672">.</span>Command([<span style="color:#e6db74">&#39;cat &#39;</span>,urdf_path])
+</span></span><span style="display:flex;"><span>    robot_description_value <span style="color:#f92672">=</span> ParameterValue(content_result,value_type<span style="color:#f92672">=</span>str) <span style="color:#75715e">#防止 launch 自动猜测参数类型，指明所有内容按字符串读取</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    action_robot_state_publisher_node <span style="color:#f92672">=</span> launch_ros<span style="color:#f92672">.</span>actions<span style="color:#f92672">.</span>Node(
+</span></span><span style="display:flex;"><span>        package<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;robot_state_publisher&#39;</span>,     <span style="color:#75715e">#pkg name</span>
+</span></span><span style="display:flex;"><span>        executable<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;robot_state_publisher&#39;</span>,  <span style="color:#75715e">#exe name</span>
+</span></span><span style="display:flex;"><span>        parameters<span style="color:#f92672">=</span>[{<span style="color:#e6db74">&#34;robot_description&#34;</span>:robot_description_value}]             
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    action_joint_state_publisher_node <span style="color:#f92672">=</span> launch_ros<span style="color:#f92672">.</span>actions<span style="color:#f92672">.</span>Node(
+</span></span><span style="display:flex;"><span>        package<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;joint_state_publisher&#39;</span>,     <span style="color:#75715e">#pkg name</span>
+</span></span><span style="display:flex;"><span>        executable<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;joint_state_publisher&#39;</span>,  <span style="color:#75715e">#exe name         </span>
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    action_riviz_node <span style="color:#f92672">=</span> launch_ros<span style="color:#f92672">.</span>actions<span style="color:#f92672">.</span>Node(
+</span></span><span style="display:flex;"><span>        package<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;rviz2&#39;</span>,     <span style="color:#75715e">#pkg name</span>
+</span></span><span style="display:flex;"><span>        executable<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;rviz2&#39;</span>,  <span style="color:#75715e">#exe name   </span>
+</span></span><span style="display:flex;"><span>        arguments<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;-d&#39;</span>, rviz_path],
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> launch<span style="color:#f92672">.</span>LaunchDescription([
+</span></span><span style="display:flex;"><span>        action_declare_urdf_path,
+</span></span><span style="display:flex;"><span>        action_declare_rviz_path,
+</span></span><span style="display:flex;"><span>        action_robot_state_publisher_node,
+</span></span><span style="display:flex;"><span>        action_joint_state_publisher_node,
+</span></span><span style="display:flex;"><span>        action_riviz_node
+</span></span><span style="display:flex;"><span>    ])</span></span></code></pre></div>
+  </div><p>可以看到报错都消失了</p>
+<p><img src="../../images/posts/URDF_learn/rviz5.png" alt=""></p>
+<h3 id="5使用-xacro-去简化-urdf-的编写">5、使用 Xacro 去简化 urdf 的编写</h3>
+<p>在前面用 XML 去编写 urdf 时可以看到如果机器人有多个部件其实很多代码都是重复的，这很明显违法了 DRY 原则，所以我们最好用 Xacro 去简化 urdf 的编写，Xacro 最大的好处呢就是在编写 urdf 时候能够创建与使用宏（就相当于函数），能够极大的降低代码的重复率。</p>
+<p>先创建一个 xacro 文件：</p>
+<p><img src="../../images/posts/URDF_learn/create_xacro_file.png" alt=""></p>
+<p>参考如下代码：</p>
+<div class="code-block">
+    <button class="code-copy" type="button" hidden aria-label="Copy code to clipboard">
+      <span class="code-copy-label" aria-hidden="true">Copy</span>
+    </button>
+    <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-XML" data-lang="XML"><span style="display:flex;"><span><span style="color:#75715e">&lt;?xml version=&#34;1.0&#34;?&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;robot</span> <span style="color:#a6e22e">xmlns:xacro=</span><span style="color:#e6db74">&#34;http://www.ros.org/wiki/xacro&#34;</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;my_robot&#34;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">&lt;!-- 定义一个机器人宏 --&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;xacro:macro</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;base&#34;</span> <span style="color:#a6e22e">params=</span><span style="color:#e6db74">&#34;radius length&#34;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">&lt;!-- robot&#39;s body --&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;link</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;base_link&#34;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">&lt;!-- firmware appearance description --&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;visual&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">&lt;!-- 沿着自己几何中心的偏移和旋转 --&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&lt;origin</span> <span style="color:#a6e22e">xyz=</span><span style="color:#e6db74">&#34;0.0 0.0 0.0&#34;</span> <span style="color:#a6e22e">rpy=</span><span style="color:#e6db74">&#34;0.0 0.0 0.0&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">&lt;!-- 几何形状 --&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&lt;geometry&gt;</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#75715e">&lt;!-- 形状是圆柱体 --&gt;</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">&lt;cylinder</span> <span style="color:#a6e22e">radius=</span><span style="color:#e6db74">&#34;${radius}&#34;</span> <span style="color:#a6e22e">length=</span><span style="color:#e6db74">&#34;${length}&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&lt;/geometry&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">&lt;!-- 材质颜色 --&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&lt;material</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;white&#34;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">&lt;color</span> <span style="color:#a6e22e">rgba=</span><span style="color:#e6db74">&#34;1.0 1.0 1.0 0.5&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&lt;/material&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;/visual&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;/link&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/xacro:macro&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">&lt;!-- 定义一个IMU部件宏 --&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;xacro:macro</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;imu&#34;</span> <span style="color:#a6e22e">params=</span><span style="color:#e6db74">&#34;imu_name x y z &#34;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">&lt;!-- 机器人的IMU部件 --&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;link</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;${imu_name}_link&#34;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">&lt;!-- firmware appearance description --&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;visual&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">&lt;!-- 沿着自己几何中心的偏移和旋转 --&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&lt;origin</span> <span style="color:#a6e22e">xyz=</span><span style="color:#e6db74">&#34;0.0 0.0 0.0&#34;</span> <span style="color:#a6e22e">rpy=</span><span style="color:#e6db74">&#34;0.0 0.0 0.0&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">&lt;!-- 几何形状 --&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&lt;geometry&gt;</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">&lt;box</span> <span style="color:#a6e22e">size=</span><span style="color:#e6db74">&#34;0.02 0.02 0.02&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&lt;/geometry&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">&lt;!-- 材质颜色 --&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&lt;material</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;black&#34;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">&lt;color</span> <span style="color:#a6e22e">rgba=</span><span style="color:#e6db74">&#34;0.0 0.0 0.0 0.5&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&lt;/material&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;/visual&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;/link&gt;</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">&lt;!-- 机器人的关节，用于组合机器人的部件 --&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;joint</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;${imu_name}_joint&#34;</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;fixed&#34;</span><span style="color:#f92672">&gt;</span>   
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">&lt;!-- 部件固定的位置 部件的中心相对于机器人的中心--&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;origin</span> <span style="color:#a6e22e">xyz=</span><span style="color:#e6db74">&#34;${x} ${y} ${z}&#34;</span> <span style="color:#a6e22e">rpy=</span><span style="color:#e6db74">&#34;0.0 0.0 0.0&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;parent</span> <span style="color:#a6e22e">link=</span><span style="color:#e6db74">&#34;base_link&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;child</span> <span style="color:#a6e22e">link=</span><span style="color:#e6db74">&#34;${imu_name}_link&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;/joint&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/xacro:macro&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;xacro:base</span> <span style="color:#a6e22e">length=</span><span style="color:#e6db74">&#34;0.12&#34;</span> <span style="color:#a6e22e">radius=</span><span style="color:#e6db74">&#34;0.1&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;xacro:imu</span> <span style="color:#a6e22e">imu_name=</span><span style="color:#e6db74">&#34;up_imu&#34;</span> <span style="color:#a6e22e">x=</span><span style="color:#e6db74">&#34;0.0&#34;</span> <span style="color:#a6e22e">y=</span><span style="color:#e6db74">&#34;0.0&#34;</span> <span style="color:#a6e22e">z=</span><span style="color:#e6db74">&#34;0.05&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;xacro:imu</span> <span style="color:#a6e22e">imu_name=</span><span style="color:#e6db74">&#34;down_imu&#34;</span> <span style="color:#a6e22e">x=</span><span style="color:#e6db74">&#34;0.0&#34;</span> <span style="color:#a6e22e">y=</span><span style="color:#e6db74">&#34;0.0&#34;</span> <span style="color:#a6e22e">z=</span><span style="color:#e6db74">&#34;-0.05&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/robot&gt;</span></span></span></code></pre></div>
+  </div><p>虽然也是一坨看得人不想写，但可以看到定义两个 IMU 部件只需要再加一行代码即可，所以在多部件情况下可帮了我们大忙。</p>
+<p>接下来就需要把这个 xacro 文件转换为 urdf 文件了
+先在终端执行命令：</p>
+<div class="code-block">
+    <button class="code-copy" type="button" hidden aria-label="Copy code to clipboard">
+      <span class="code-copy-label" aria-hidden="true">Copy</span>
+    </button>
+    <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>sudo apt install ros-$ROS_DISTRO-xacro</span></span></code></pre></div>
+  </div><p>现在就可以通过 xacro 加具体路径将 xacro 文件转化为 urdf 了</p>
+<p><img src="../../images/posts/URDF_learn/terminal1.png" alt=""></p>
+<p>它会输出完整的 urdf 文件的内容到终端理，所以我们就可以改一下 launch 代码：</p>
+<p><img src="../../images/posts/URDF_learn/code1.png" alt=""></p>
+<p>Rviz 理我们就可以改成 topic 的形式并设置 topic 为 /robot_description 这样就不用反复切换文件啦</p>
+<p><img src="../../images/posts/URDF_learn/rviz1.png" alt=""></p><ul class="pa0">
+  
+</ul><ul class="pa0">
+  
+</ul>
+
+      
+    </div></article>
+</main><footer class="bg-dark-blue bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="http://localhost:58284/my_blog/" >
+    &copy;  hatter's blog 2026 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

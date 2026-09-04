@@ -15,3 +15,16 @@ body.is-home > header h2 {
 body.is-home > header nav a {
   color: #ffd166;
 }
+
+/* 扩大文章正文区域 */
+body.is-page article.mw7 {
+  width: 94%;
+  max-width: 90rem;
+  box-sizing: border-box;
+}
+
+/* 取消正文右侧额外空白 */
+body.is-page article.mw7 > .nested-copy-line-height {
+  width: 100%;
+  padding-right: 0;
+}
